@@ -1,27 +1,41 @@
-import db_handle as jh
+"""Dieses Skript habe ich geschrieben, um mir für mehrere Messwerte schnell die Planck-Konstante ausrechnen zu lassen."""
+
+from db_handle.database import Database as DB
 import constants as c
 import math as m
 import matplotlib.pyplot as plt
 
-"""Dieses Skript habe ich geschrieben, um mir für mehrere Messwerte schnell die Planck-Konstante ausrechnen zu lassen."""
+# Datenbank initialisieren
+db = DB("planck")
+    
+# 1/sin(thau) berechnen
+def calc_h(d: float):
+    measurements = db.get_value("measurements")
+    calc = {}
+    for voltage in measurements.keys():
+        volt = float(voltage)
+        h = (c.elementary_charge() * volt) * 2 * d * m.sin(m.radians(measurements[voltage])) / c.speed_of_light()
+        calc[voltage] = h
+    db.set_value("h", calc)
+    
 
-def calculate_planck(voltage: float, theta: float, distance: float) -> float:
-    planck = (c.elementary_charge() * voltage * 2 * distance * m.sin(m.radians(theta))) / (c.speed_of_light())
-    return planck
-
-
-def draw_graph():
-    plt.
-
+    
 
 if __name__ == "__main__":
-    for voltage in jh.get_keys("planck"):
-        theta = jh.get_value("planck", voltage)
-        
-        #Konvertierung von String zu Float
-        voltage = float(voltage)
-        theta = float(theta)
-        
-        calculate_planck(voltage, theta, 2.015e-24)
-        print(f"Voltage: {voltage}V, Theta: {theta}°, Planck: {calculate_planck(voltage, theta, 2.015e-24)}")
+    db.delete_all()
+    
+    measurements = {
+        "15000": 12.4,
+        "20000": 9.0,
+        "25000": 7.4,
+        "30000": 5.4,
+        "35000": 4.8,
+    }
+    
+    db.set_value("measurements", measurements)
+    
+    calc_h(2)
+    
+
+
     
